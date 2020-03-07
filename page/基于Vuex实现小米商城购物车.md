@@ -2,13 +2,13 @@
 
 ## 前言
 
-2020年寒假尤其特殊，因为新型冠状病毒肺炎疫情，学校至今没有正式开学。想起上学期利用课余时间学习了`vue`、`node.js`，一直想做个完整的项目实战一下，但之前在学校并没有那么多的时间。现在恰好有时间，就想着做一个项目巩固之前学到的东西。
+2020年寒假尤其特殊，因为新型冠状病毒肺炎疫情，学校至今没有正式开学。想起上学期利用课余时间学习了`Vue.js`、`Node.js`，一直想做个完整的项目实战一下，但之前在学校并没有那么多的时间。现在恰好有时间，就想着做一个项目巩固之前学到的东西。
 
-思来想去，最后决定模仿 [小米商城 ](www.mi.com)做一个电商项目，目前已经差不多做完了，本文就购物车的实现进行总结。
+思来想去，最后决定模仿 [小米商城 ](www.mi.com)做一个电商项目，目前已经差不多做完了，本文就购物车模块的实现进行总结。
 
 ## 说明
 
-> 完整项目地址：[https://github.com/hai-27/vue-store](https://github.com/hai-27/vue-store)。
+> 完整项目代码仓库：[https://github.com/hai-27/vue-store](https://github.com/hai-27/vue-store)。
 
 >  项目部署在阿里云服务器，预览链接：[ http://106.15.179.105 ]( http://106.15.179.105)。
 
@@ -23,13 +23,13 @@
 
 ## 实现步骤
 
-### 静态页面准备
+### 1. 静态页面准备
 
 ![](https://user-gold-cdn.xitu.io/2020/3/7/170b4eb5b5a5bd80?w=1901&h=449&f=png&s=37994)
 
-页面使用了 [element-ui]( https://element.eleme.cn/#/zh-CN/component/installation ) 的`Icon 图标`、` el-checkbox `、`el-input-number`、`el-popover`、`el-button`，所有在main.js需要引入element-ui
+页面使用了 [element-ui]( https://element.eleme.cn/#/zh-CN/component/installation ) 的`Icon 图标`、` el-checkbox `、`el-input-number`、`el-popover`、`el-button`，所有在main.js需要引入element-ui。
 
-```
+```javascript
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(ElementUI);
@@ -39,7 +39,7 @@ Vue.use(ElementUI);
 
 **说明：** 为了方便，此处直接放最终的代码。
 
-```
+```html
 <template>
   <div class="shoppingCart">
     <!-- 购物车头部 -->
@@ -160,11 +160,11 @@ Vue.use(ElementUI);
 </template>
 ```
 
-### 创建Vuex
+### 2. 创建Vuex
 
 /store/index.js
 
-```
+```javascript
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -182,7 +182,7 @@ export default new Vuex.Store({
 
 /store//modules/shoppingCart.js
 
-```
+```javascript
 export default {
   state: {
     shoppingCart: []
@@ -203,7 +203,7 @@ export default {
 }
 ```
 
-### 同步购物车状态
+### 3. 同步购物车状态
 
 **思路：**
 
@@ -213,7 +213,7 @@ export default {
 
 代码如下：
 
-```
+```javascript
 import { mapActions } from "vuex";
 import { mapGetters } from "vuex";
 
@@ -254,7 +254,7 @@ watch: {
 
 vuex的mutations：
 
-```
+```javascript
 setShoppingCart (state, data) {
 	// 设置购物车状态
 	state.shoppingCart = data;
@@ -263,29 +263,76 @@ setShoppingCart (state, data) {
 
 vuex的actions
 
-```
+```javascript
 setShoppingCart({ commit }, data) {
   commit('setShoppingCart', data);
 }
 ```
 
-### 添加购物车
-
-用户在商品的详情页，通过点击加入购物车按钮，把商品加入购物车。
+### 4. 动态生成购物车页面
 
 **思路：**
 
+- 通过vuex中的getters.getShoppingCart获取购物车的状态；
+- 使用v-if判断购物车是否存在商品；
+- 如果存在，使用v-for生成购物车列表；
+- 如果不存在，显示购物车为空的时候显示的内容；
+
+购物车html伪代码：
+
+```html
+<div class="shoppingCart">
+  <div class="content" v-if="getShoppingCart.length>0">
+    <ul>
+      <li class="header">
+        <!-- 购物车表头部分,省略详细代码 -->
+      </li>
+      <li class="product-list" v-for="(item,index) in getShoppingCart" :key="item.id">
+        <!-- 购物车列表部分，省略详细代码 -->
+      </li>
+    </ul>
+  </div>
+  <!-- 购物车为空的时候显示的内容 -->
+  <div v-else class="cart-empty">
+    <div class="empty">
+      <h2>您的购物车还是空的！</h2>
+      <p>快去购物吧！</p>
+    </div>
+    
+  </div>
+</div>
+```
+
+vuex的getters：
+
+```javascript
+getShoppingCart(state) {
+  // 获取购物车状态
+  return state.shoppingCart;
+}
+```
+
+### 5.添加商品到购物车
+
+**思路：**
+
+- 用户在商品的详情页，通过点击加入购物车按钮，调用点击事件addShoppingCart；
 - 先向后端发起添加购物车的请求，根据返回信息操作vuex；
-
 - 该商品第一次加入购物车：通过vuex的 Actions (unshiftShoppingCart)把后端返回的购物车信息插入vuex；
-
 - 该商品已经在购物车，通过vuex的 Actions (addShoppingCartNum)把该商品数量+1；
-
 - 商品数量达到限购数量，禁止点击加入购物车按钮。
 
-代码如下：
+html：
 
+```html
+<el-button class="shop-cart" :disabled="dis" @click="addShoppingCart">
+  加入购物车
+</el-button>
 ```
+
+逻辑代码如下：
+
+```javascript
 methods: {
   ...mapActions(["unshiftShoppingCart", "addShoppingCartNum"]),
   // 加入购物车
@@ -334,20 +381,35 @@ methods: {
 }
 ```
 
-### 删除购物车
-
-购物车每个商品都一个删除按钮，用户点击删除按钮，先弹出对话框，当用户选择确认删除，调用点击事件deleteItem($event,item.id,item.productID)。
+### 6. 删除购物车中的商品
 
 **思路：**
 
+- 购物车每个商品都有一个删除按钮，用户点击删除按钮，先弹出确认对话框；
+- 当用户选择确认删除，调用点击事件deleteItem($event,item.id,item.productID)；
 - 通过点击事件获取到购物车id和商品id；
 - 先向后端发起删除购物车的请求，根据返回信息操作vuex；
 - 删除成功，通过通过vuex的 Actions (deleteShoppingCart)，把该商品从购物车删除；
 - 如果删除失败，提示相关信息。
 
-代码如下：
+html：
 
+```html
+<div class="pro-action">
+  <el-popover placement="right">
+    <p>确定删除吗？</p>
+    <div style="text-align: right; margin: 10px 0 0">
+      <el-button type="primary" size="mini" 
+      @click="deleteItem($event,item.id,item.productID)">确定</el-button>
+    </div>
+    <i class="el-icon-error" slot="reference" style="font-size: 18px;"></i>
+  </el-popover>
+</div>
 ```
+
+逻辑代码如下：
+
+```javascript
 methods: {
   // 向后端发起删除购物车的数据库信息请求
   deleteItem(e, id, productID) {
@@ -379,7 +441,7 @@ methods: {
 
 vuex的mutations：
 
-```
+```javascript
 deleteShoppingCart(state, id) {
   // 根据购物车id删除购物车商品
   for (let i = 0; i < state.shoppingCart.length; i++) {
@@ -393,26 +455,39 @@ deleteShoppingCart(state, id) {
 
 vuex的actions：
 
-```
+```javascript
 deleteShoppingCart({ commit }, id) {
   commit('deleteShoppingCart', id);
 }
 ```
 
-### 修改商品数量
-
-购物车每个商品都有一个计数器，可以点击加减按钮修改商品数量，或者直接在input输入框输入商品数量进行修改。计数器使用了 [element-ui]( https://element.eleme.cn/#/zh-CN/component/installation ) 的`el-input-number`实现。
+### 7. 修改购物车商品的数量
 
 **思路：**
 
-- 通过 change 事件获取到新的数量、购物车商品的索引(即数组的索引)、商品id；
+- 购物车每个商品都有一个计数器，可以点击加减按钮修改商品数量，或者直接在input输入框输入商品数量进行修改。计数器使用了 [element-ui]( https://element.eleme.cn/#/zh-CN/component/installation ) 的`el-input-number`实现。
+- 通过计数器的 change 事件获取到新的数量、购物车商品的索引(即数组的索引)、商品id；
 - 先向后端发起修改购物车商品数量的请求，根据返回信息操作vuex；
 - 修改成功，通过vuex的 Actions (updateShoppingCart)，修改购物车商品的数量；
 - 修改失败，提示失败信息。其中：数量小于1、数量是否达到限购数量（这两种情况，前端有设置校验，一般不会出现）。
 
-代码如下：
+html：
 
+```html
+<div class="pro-num">
+  <el-input-number 
+  size="small" 
+  :value="item.num" 
+  @change="handleChange($event,index,item.productID)" 
+  :min="1"
+  :max="item.maxNum"
+  >
+</el-input-number>
 ```
+
+逻辑代码如下：
+
+```javascript
 // 修改商品数量的时候调用该函数
 handleChange(currentValue, key, productID) {
   // 当修改数量时，默认勾选
@@ -450,7 +525,7 @@ handleChange(currentValue, key, productID) {
 
 vuex的mutations：
 
-```
+```javascript
 updateShoppingCart(state, payload) {
   // 更新购物车
   // 可更新商品数量和是否勾选
@@ -471,24 +546,31 @@ updateShoppingCart(state, payload) {
 
 vuex的actions：
 
-```
+```javascript
 updateShoppingCart({ commit }, payload) {
   commit('updateShoppingCart', payload);
 }
 ```
 
-### 是否勾选商品
-
-购物车每个商品都有一个勾选框，使用[element-ui]( https://element.eleme.cn/#/zh-CN/component/installation ) 的`el-checkbox`实现，结算时提交全部勾选的商品。
+### 8. 是否勾选商品
 
 **思路：**
 
+- 购物车每个商品都有一个勾选框，使用[element-ui]( https://element.eleme.cn/#/zh-CN/component/installation ) 的`el-checkbox`实现，结算时提交全部勾选的商品。
 - 通过 change 事件获取到勾选框的状态（true或false）、购物车商品的索引(即数组的索引)；
 - 通过vuex的 Actions (updateShoppingCart)，修改购物车商品的勾选状态；
 
-代码如下：
+html:
 
+```html
+<div class="pro-check">
+  <el-checkbox :value="item.check" @change="checkChange($event,index)"></el-checkbox>
+</div>
 ```
+
+逻辑代码如下：
+
+```javascript
 checkChange(val, key) {
   // 更新vuex中购物车商品是否勾选的状态
   this.updateShoppingCart({ key: key, prop: "check", val: val });
@@ -497,19 +579,26 @@ checkChange(val, key) {
 
 **说明：** 此处使用的vuex的mutationsvuex和actions，和**修改商品数量**的是同一个，两个场景，通过传递的参数不同进行区分。**修改商品数量**时传递参数是{ key: key, prop: "num", val: val }，**是否勾选商品**传递的参数是{ key: key, prop: "check", val: val }，请注意**prop**的变化。
 
-### 是否全选商品
-
-购物车设置了一个全选框，通过v-model绑定**isAllCheck**。
+### 9. 是否全选商品
 
 **思路：**
 
-- **isAllCheck**值是通过计算属性的 getter获取vuex中的getters.getIsAllCheck;
+- 购物车设置了一个全选框，通过v-model绑定**isAllCheck**。
+- isAllCheck**值是通过计算属性的 getter获取vuex中的getters.getIsAllCheck;
 - vuex中的getters.getIsAllCheck通过遍历购物车数组，判断每一个商品勾选状态，只要有一个商品没有勾选，getIsAllCheck均为false，否则为true；
 - 当点击全选框，通过计算属性的 setter 调用vuex的Actions (checkAll)，更改每个商品的勾选状态，从而修改全选框的状态。
 
-代码如下：
+html：
 
+```html
+<div class="pro-check">
+  <el-checkbox v-model="isAllCheck">全选</el-checkbox>
+</div>
 ```
+
+逻辑代码如下：
+
+```javascript
 computed: { 
   isAllCheck: {
     get() {
@@ -524,7 +613,7 @@ computed: {
 
 vuex的getters：
 
-```
+```javascript
 getIsAllCheck(state) {
   // 判断是否全选
   let isAllCheck = true;
@@ -542,7 +631,7 @@ getIsAllCheck(state) {
 
 vuex的mutations：
 
-```
+```javascript
 checkAll(state, data) {
   // 点击全选按钮，更改每个商品的勾选状态
   for (let i = 0; i < state.shoppingCart.length; i++) {
@@ -553,19 +642,107 @@ checkAll(state, data) {
 
 vuex的actions
 
-```
+```javascript
 checkAll({ commit }, data) {
   commit('checkAll', data);
 }
 ```
 
+### 10. 计算购物车中商品的总数量
 
+在购物车页面和根组件的顶部导航栏使用。
 
+vuex的getters：
 
+```javascript
+getNum(state) {
+  // 购物车商品总数量
+  let totalNum = 0;
+  for (let i = 0; i < state.shoppingCart.length; i++) {
+    const temp = state.shoppingCart[i];
+    totalNum += temp.num;
+  }
+  return totalNum;
+}
+```
 
+### 11. 计算购物车中勾选的商品总数量
 
+在购物车页面和结算页面使用。
 
+vuex的getters：
 
+```javascript
+getCheckNum(state) {
+  // 获取购物车勾选的商品总数量
+  let totalNum = 0;
+  for (let i = 0; i < state.shoppingCart.length; i++) {
+    const temp = state.shoppingCart[i];
+    if (temp.check) {
+      totalNum += temp.num;
+    }
+  }
+  return totalNum;
+}
+```
 
+### 12. 计算购物车中勾选的商品总价格
 
+在购物车页面和结算页面使用。
 
+vuex的getters：
+
+```javascript
+getTotalPrice(state) {
+  // 购物车勾选的商品总价格
+  let totalPrice = 0;
+  for (let i = 0; i < state.shoppingCart.length; i++) {
+    const temp = state.shoppingCart[i];
+    if (temp.check) {
+      totalPrice += temp.price * temp.num;
+    }
+  }
+  return totalPrice;
+}
+```
+
+### 13.生成购物车中勾选的商品详细信息
+
+在结算页面使用。
+
+vuex的getters：
+
+```javascript
+getCheckGoods(state) {
+  // 获取勾选的商品信息
+  // 用于确认订单页面
+  let checkGoods = [];
+  for (let i = 0; i < state.shoppingCart.length; i++) {
+    const temp = state.shoppingCart[i];
+    if (temp.check) {
+      checkGoods.push(temp);
+    }
+  }
+  return checkGoods;
+}
+```
+
+## 总结
+
+至此，购物车的前端部分已经全部实现，从数据库同步购物车数据，根据购物车数据动态生成购物车页面，添加商品到购物车，删除购物车中的商品，修改购物车商品的数量，是否勾选购物车商品，是否全选购物车商品， 计算购物车中商品的总数量，计算购物车中勾选的商品总数量，计算购物车中勾选的商品总价格，生成购物车中勾选的商品详细信息。
+
+## 后记
+
+> 结束了，新人第一次发帖，若有不对的地方，请多多指教 ^_^ 
+
+> 本文是基于完整项目，就购物车模块的实现进行总结。
+
+> 完整项目代码仓库：[https://github.com/hai-27/vue-store](https://github.com/hai-27/vue-store)。
+
+> 项目预览链接：[ http://106.15.179.105 ]( http://106.15.179.105)。
+
+> 喜欢本文的同学，不妨点个赞，如果能给完整项目代码仓库加个star就更好了，谢谢 ^_^ 
+
+> 对这个项目会做更多的总结，感兴趣的同学可以点个关注。
+
+> 感谢你的阅读！
