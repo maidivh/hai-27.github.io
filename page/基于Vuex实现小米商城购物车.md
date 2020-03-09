@@ -2,7 +2,7 @@
 
 ## 前言
 
-2020年寒假尤其特殊，因为新型冠状病毒肺炎疫情，学校至今没有正式开学。想起上学期利用课余时间学习了`Vue.js`、`Node.js`，一直想做个完整的项目实战一下，但之前在学校并没有那么多的时间。现在恰好有时间，就想着做一个项目巩固之前学到的东西。
+上学期利用课余时间学习了Vue.js、Node.js，一直想做个完整的项目 实践 一下，但之前在学校并没有那么多的时间。现在恰好有时间，就想着做一个项目巩固之前学到的东西。
 
 思来想去，最后决定模仿 [小米商城 ](www.mi.com)做一个电商项目，目前已经差不多做完了，本文就购物车模块的实现进行总结。
 
@@ -10,7 +10,7 @@
 
 > 完整项目代码仓库：[https://github.com/hai-27/vue-store](https://github.com/hai-27/vue-store)。
 
->  项目部署在阿里云服务器，预览链接：[ http://106.15.179.105 ]( http://106.15.179.105)。
+>  项目部署在阿里云服务器，预览链接：[ http://106.15.179.105 ]( http://106.15.179.105)(没有兼容移动端，请使用PC访问)。
 
 > 本文仅对前端部分进行总结，后端采用 Node.js(Koa)+Mysql 实现，详细代码请移步 [https://github.com/hai-27/store-server](https://github.com/hai-27/store-server)。
 
@@ -180,7 +180,7 @@ export default new Vuex.Store({
 })
 ```
 
-/store//modules/shoppingCart.js
+/store/modules/shoppingCart.js
 
 ```javascript
 export default {
@@ -378,6 +378,39 @@ methods: {
         return Promise.reject(err);
       });
   }
+}
+```
+
+vuex的mutations：
+
+```javascript
+unshiftShoppingCart(state, data) {
+  // 添加商品到购物车
+  // 用于在商品详情页点击添加购物车,后台添加成功后，更新vuex状态
+  state.shoppingCart.unshift(data);
+},
+addShoppingCartNum(state, productID) {
+  // 增加购物车商品数量
+  // 用于在商品详情页点击添加购物车,后台返回002，“该商品已在购物车，数量 +1”，更新vuex的商品数量
+  for (let i = 0; i < state.shoppingCart.length; i++) {
+    const temp = state.shoppingCart[i];
+    if (temp.productID == productID) {
+      if (temp.num < temp.maxNum) {
+        temp.num++;
+      }
+    }
+  }
+}
+```
+
+vuex的actions：
+
+```javascript
+unshiftShoppingCart({ commit }, data) {
+  commit('unshiftShoppingCart', data);
+},
+addShoppingCartNum({ commit }, productID) {
+  commit('addShoppingCartNum', productID);
 }
 ```
 
@@ -739,7 +772,7 @@ getCheckGoods(state) {
 
 > 完整项目代码仓库：[https://github.com/hai-27/vue-store](https://github.com/hai-27/vue-store)。
 
-> 项目预览链接：[ http://106.15.179.105 ]( http://106.15.179.105)。
+> 项目预览链接：[ http://106.15.179.105 ]( http://106.15.179.105)(没有兼容移动端，请使用PC访问)。
 
 > 喜欢本文的同学，不妨点个赞，如果能给完整项目代码仓库加个Star就更好了，谢谢 ^_^ 
 
