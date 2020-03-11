@@ -318,7 +318,7 @@ getShoppingCart(state) {
 
 - 用户在商品的详情页，通过点击加入购物车按钮，调用点击事件addShoppingCart；
 - 先向后端发起添加购物车的请求，根据返回信息操作vuex；
-- 该商品第一次加入购物车：通过vuex的 Actions (unshiftShoppingCart)把后端返回的购物车信息插入vuex；
+- 该商品第一次加入购物车，通过vuex的 Actions (unshiftShoppingCart)把后端返回的购物车信息插入vuex；
 - 该商品已经在购物车，通过vuex的 Actions (addShoppingCartNum)把该商品数量+1；
 - 商品数量达到限购数量，禁止点击加入购物车按钮。
 
@@ -422,7 +422,7 @@ addShoppingCartNum({ commit }, productID) {
 - 当用户选择确认删除，调用点击事件deleteItem($event,item.id,item.productID)；
 - 通过点击事件获取到购物车id和商品id；
 - 先向后端发起删除购物车的请求，根据返回信息操作vuex；
-- 删除成功，通过通过vuex的 Actions (deleteShoppingCart)，把该商品从购物车删除；
+- 删除成功，通过vuex的 Actions (deleteShoppingCart)，把该商品从购物车删除；
 - 如果删除失败，提示相关信息。
 
 html：
@@ -617,7 +617,7 @@ checkChange(val, key) {
 **思路：**
 
 - 购物车设置了一个全选框，通过v-model绑定**isAllCheck**。
-- isAllCheck**值是通过计算属性的 getter获取vuex中的getters.getIsAllCheck;
+- **isAllCheck**值是通过计算属性的 getter获取vuex中的getters.getIsAllCheck;
 - vuex中的getters.getIsAllCheck通过遍历购物车数组，判断每一个商品勾选状态，只要有一个商品没有勾选，getIsAllCheck均为false，否则为true；
 - 当点击全选框，通过计算属性的 setter 调用vuex的Actions (checkAll)，更改每个商品的勾选状态，从而修改全选框的状态。
 
