@@ -69,7 +69,7 @@ module.exports = Routers;
 
 ```javascript
 // 使用路由中间件
-const Routers = require('./src/routers');
+const Routers = require('./routers');
 app.use(Routers.routes()).use(Routers.allowedMethods());
 ```
 
@@ -102,7 +102,7 @@ dbConfig: {
 
 ```javascript
 var mysql = require('mysql');
-const { dbConfig } = require('../../config.js');
+const { dbConfig } = require('../config.js');
 var pool = mysql.createPool(dbConfig);
 
 var db = {};
@@ -155,7 +155,7 @@ npm install koa-body -S
 在config.js添加如下代码
 
 ```javascript
-uploadDir: path.join(__dirname, path.resolve('public/')), // 上传文件路径
+uploadDir: path.join(__dirname, path.resolve('../public/')), // 上传文件路径
 ```
 
 app.js
@@ -210,7 +210,7 @@ npm install koa-router -S
 在config.js添加如下代码
 
 ```javascript
-staticDir: path.resolve('./public'), // 静态资源路径
+staticDir: path.resolve('../public'), // 静态资源路径
 ```
 
 app.js
@@ -276,7 +276,7 @@ app.js
 ```javascript
 const Session = require('koa-session');
 // session
-const CONFIG = require('./src/middleware/session');
+const CONFIG = require('./middleware/session');
 app.keys = ['session app keys'];
 app.use(Session(CONFIG, app));
 ```
@@ -304,7 +304,7 @@ app.js
 
 ```javascript
 // 判断是否登录
-const isLogin = require('./src/middleware/isLogin');
+const isLogin = require('./middleware/isLogin');
 app.use(isLogin);
 ```
 
